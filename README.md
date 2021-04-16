@@ -1,2 +1,2 @@
-# ec37c
-Projeto IA
+# IF69P
+Practice 1, 2 and 3
