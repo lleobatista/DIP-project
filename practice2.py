@@ -4,6 +4,15 @@ Disciplina: Processamento de Imagens
 Aluno: Leonardo Batista
 RA: 1885189
 '''
+'''
+executar código com: 
+python -t OPERATION -i imagem.jpg
+OPERATION disponíveis: 
+a) equalization
+b) averaging
+c) median
+d) gaussian
+'''
 ######################################################
 ################### Prática 02 #######################
 ######################################################
@@ -12,25 +21,31 @@ import cv2 as cv
 import argparse
 import numpy as np
 
-# Função que retorna a mascara a ser utilizada no filtro gaussiano
-def mascara_gaussiana(tamanho_mascara):
-    mascara_x = np.array(trianguloPascal(tamanho_mascara[0]-1))
-    mascara_y = np.array(trianguloPascal(tamanho_mascara[1]-1))
-
-    mascara = np.ndarray(tamanho_mascara, dtype=np.uint8)
-    
-    for i in range(tamanho_mascara[0]):
-        for j in range(tamanho_mascara[1]):
-            mascara[i][j] = mascara_x[i] * mascara_y[j]
-
-    return mascara
+###### -----------> AS MÁSCAS APLICADAS SÃO 5X5 <----------- ######
 
 # a) Realiza a equalização do histograma
 def equalizationImage(gray):
     equ = cv.equalizeHist(gray)
     cv.imwrite('a-practice2.png',equ)
 
-#
+# b) Aplicar filtro da média
+def averageFiltering(gray):
+    kernel = np.ones((5,5),np.float32)/25
+    dst = cv.filter2D(gray,-1,kernel)
+    cv.imwrite('b-practice2.png', dst)
+    print('the filter has applied')
+
+# c) Aplicar Filtro da mediana
+def medianFiltering(gray):
+    median = cv.medianBlur(gray, 5)
+    cv.imwrite('c-practice2.png',median)
+    print('the filter has applied')
+
+# d) Aplicar filtro Gaussiano
+def gaussianFiltering(gray):
+    gaus = cv.GaussianBlur(gray, (5,5), 0)
+    cv.imwrite('d-practice2.png',gaus)
+    print('the filter has applied')
 
 def main():
     parser = argparse.ArgumentParser(description="Image processing")
@@ -43,12 +58,12 @@ def main():
 
     if args['operation'] == 'equalization':
         equalizationImage(gray)
-    elif args['operation'] == 'change-column':
-        changeCols(gray)
-    elif args['operation'] == 'change-row':
-        changeRows(gray)
-    elif args['operation'] == 'histogram-strechting':
-        histogramStrechting(gray, 255, 0)
+    elif args['operation'] == 'averaging':
+        averageFiltering(gray)
+    elif args['operation'] == 'median':
+        medianFiltering(gray)
+    elif args['operation'] == 'gaussian':
+        gaussianFiltering(gray)
     else:
         print('The operation informed is incorrect')
 
