@@ -25,6 +25,19 @@ resized_image = rescaleFrame(img)
 img_cinza = cv.cvtColor(resized_image, cv.COLOR_BGR2GRAY)
 gray = cv.cvtColor(resized_image, cv.COLOR_BGR2GRAY)    #transformando em cinza
 
+# Função que retorna a mascara a ser utilizada no filtro gaussiano
+def mascara_gaussiana(tamanho_mascara):
+    mascara_x = np.array(trianguloPascal(tamanho_mascara[0]-1))
+    mascara_y = np.array(trianguloPascal(tamanho_mascara[1]-1))
+
+    mascara = np.ndarray(tamanho_mascara, dtype=np.uint8)
+    
+    for i in range(tamanho_mascara[0]):
+        for j in range(tamanho_mascara[1]):
+            mascara[i][j] = mascara_x[i] * mascara_y[j]
+
+    return mascara
+
 # a) Realiza a equalização do histograma
 hist,bins = np.histogram(gray.flatten(),256,[0,256])        
 cdf = hist.cumsum()
