@@ -4,74 +4,105 @@ Disciplina: Processamento de Imagens
 Aluno: Leonardo Batista
 RA: 1885189
 '''
+'''
+executar código com: 
+python -t OPERATION -i imagem.jpg
+OPERATION disponíveis: 
+a) inverse
+b) change-column
+c) change-row
+d) histogram-strechting
+'''
+######################################################
 ################### Prática 01 #######################
+######################################################
 
 import cv2 as cv
 import numpy as np
-import matplotlib.pyplot as plt
-
-img = cv.imread('Photos/cat.jpg')
-
-#alterar as dimensões da imagem
-def rescaleFrame(frame, scale=0.2):                                 
-    width = int(frame.shape[1] * scale)
-    heigth = int(frame.shape[0] * scale)
-    dimensions = (width,heigth)
-
-    return cv.resize(frame, dimensions, interpolation=cv.INTER_AREA)
-
-#transformando imagem em cinza e criando um histograma. Contem novas variáveis do mesmo shape que a imagem gray.
-resized_image = rescaleFrame(img)
-gray = cv.cvtColor(resized_image, cv.COLOR_BGR2GRAY) 
-gray2 = cv.cvtColor(resized_image, cv.COLOR_BGR2GRAY)             
-hist = cv.calcHist([gray], [0], None, [256], [0,256])
-cols = gray.shape[0]
-rows = gray.shape[1]
-new_gray = np.ndarray((cols, rows))
-invert_col = np.ndarray((cols, rows))
-invert_row = np.ndarray((cols, rows))
+import argparse
 
 #a) inverter os valores de intensidade da imagem, tal que o valor 255 passa a ser 0, 254 passa a ser 1,assim por diante.
-for i in range(0, gray.shape[0]):
-    for j in range(0, gray.shape[1]):
-          gray.itemset((i,j), 255 - gray[i,j])
+def inverse(gray):
+    rows = gray.shape[0]
+    cols = gray.shape[1]
+    new_gray = np.ndarray((rows, cols))
+
+    for i in range(rows):
+        for j in range(cols):
+            new_gray[i][j] = 255 - gray[i][j]
+
+    cv.imwrite('a_practice1.png', new_gray)
+    print('the image has complete inversed')
 
 #b) altera as colunas 
-for i in range(invert_col.shape[0]):
-        for j in range(0, invert_col.shape[1], 2):
-            try:
-                invert_col[i][j] = new_gray[i][j + 1]
-                invert_col[i][j + 1] = new_gray[i][j]
-            except:
-                continue   
+def changeCols(gray):
+    rows = gray.shape[0]
+    cols = gray.shape[1]
+    new_gray = np.ndarray((rows, cols))
 
-#c) altera as linhas
-for i in range(0, invert_row.shape[0], 2):
-        for j in range(invert_row.shape[1]):
+    for i in range(rows):
+        for j in range(0, cols, 2):
             try:
-                invert_row[i][j] = new_gray[i + 1][j]
-                invert_row[i + 1][j] = new_gray[i][j]
+                new_gray[i][j] = gray[i][j + 1]
+                new_gray[i][j + 1] = gray[i][j]
             except:
                 continue
+    cv.imwrite('b_practice1.png', new_gray)
+    print('the column has changed')
+
+#c) altera as linhas
+def changeRows(gray):
+    rows = gray.shape[0]
+    cols = gray.shape[1]
+    new_gray = np.ndarray((rows, cols))
+
+    for i in range(0, rows, 2):
+        for j in range(cols):
+            try:
+                new_gray[i][j] = gray[i + 1][j]
+                new_gray[i + 1][j] = gray[i][j]
+            except:
+                continue
+    cv.imwrite('c_practice1.png', new_gray)
+    print('the row has changed')
 
 #d) histogram strechting
-fmax = np.max(gray2)
-fmin = np.min(gray2)
+def histogramStrechting(gray, gmax, gmin):
+    rows = gray.shape[0]
+    cols = gray.shape[1]
+    new_gray = np.ndarray((rows, cols))
 
-for linha in range(gray2.shape[0]):
-    for coluna in range(gray.shape[1]):
-        f = gray2[linha][coluna]
-        g = ((255)/(fmax-fmin))*(f - fmin)
-        gray2[linha][coluna] = int(g)
+    fmax = np.max(gray)
+    fmin = np.min(gray)
 
+    # Loop em cada pixel para ser recalculado o novo valor de intensidade
+    for row in range(rows):
+        for column in range(cols):
+            f = gray[row][column]
+            g = ((gmax - gmin)/(fmax-fmin))*(f - fmin) + gmin
+            new_gray[row][column] = int(g)
 
-#plotando histogram
-plt.hist(gray.ravel(),256,[0,256])                                  
-plt.show()
+    cv.imwrite('d_practice1.jpg', gray)
 
-#exibindo imagens
-cv.imshow('histogram-strechting.jpg', gray2)
-cv.imshow('inverted col', invert_col)
-cv.imshow('inverted row', invert_row)                                    
-cv.imshow('Cat', gray)
-cv.waitKey(0)
+def main():
+    parser = argparse.ArgumentParser(description="Image processing")
+    parser.add_argument('-t', '--operation', help='The operation to apply on image', required=True)
+    parser.add_argument('-i', '--image', help='Image path', required=True)
+    args = vars(parser.parse_args())
+
+    img = cv.imread(args['image'])               # Carregando Imagem
+    gray = cv.cvtColor(img, cv.COLOR_BGR2GRAY)   # Transformando a imagem em escala de cinza
+
+    if args['operation'] == 'inverse':
+        inverse(gray)
+    elif args['operation'] == 'change-column':
+        changeCols(gray)
+    elif args['operation'] == 'change-row':
+        changeRows(gray)
+    elif args['operation'] == 'histogram-strechting':
+        histogramStrechting(gray, 255, 0)
+    else:
+        print('The operation informed is incorrect')
+
+if __name__ == '__main__':
+    main()
