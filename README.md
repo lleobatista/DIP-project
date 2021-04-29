@@ -1,4 +1,4 @@
-# IF69P - PDI
+# IF69P - DIP (digital image processing)
 
 Practice 1, 2 and 3.
 
